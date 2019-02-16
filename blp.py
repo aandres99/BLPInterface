@@ -98,7 +98,7 @@ class BLPInterface:
                 for v in [fld.getElement(i) for i in range(fld.numElements()) if fld.getElement(i).name() != 'date']:
                     df.ix[fld.getElementAsDatetime('date'), str(v.name())] = v.getValue()
 
-            df.index = df.index.to_datetime()
+            df.index = pd.to_datetime(df.index)
             df.replace('#N/A History', np.nan, inplace=True)
             
             keys.append(securityData.getElementAsString('security'))
@@ -244,6 +244,10 @@ class BLPInterface:
     def __del__ (self):
         self.close()
 
+    bdh = historicalRequest
+    bdp = referenceRequest
+    bqs = bulkRequest
+
 def main():
     """ Basic usage examples.
     
@@ -253,11 +257,12 @@ def main():
     try:
         blp = BLPInterface()
         
-        # ==============================
-        # = HistoricalRequest Examples =
-        #===============================
+        # ====================================
+        # = HistoricalRequest Examples (BDH) =
+        #=====================================
         # Requesting a single security and field returns a simple DataFrame.
         print (blp.historicalRequest('BMO CN Equity', 'PX_LAST', '20141231', '20150131'))
+        print(blp.bdh('AAPL US Equity', 'PX_LAST', '20190201', '20190214'))
         
         # Requesting multiple fields returns a DataFrame with multiple columns.  Dates may also be passed as a datetime.
         print (blp.historicalRequest('BNS CN Equity', ['PX_LAST', 'PX_VOLUME'], datetime(2014, 12, 31), datetime(2015, 1, 31)))
@@ -275,9 +280,9 @@ def main():
         
         # The BLPInterface Class can also be used as a ContextManager.
         with BLPInterface() as blp:
-            # =============================
-            # = ReferenceRequest Examples =
-            # =============================
+            # ===================================
+            # = ReferenceRequest Examples (BDP) =
+            # ===================================
             # Requesting a single security/field will return the single value, not a DataFrame.
             print (blp.referenceRequest('BBD/B CN Equity', 'GICS_SECTOR'))
             
@@ -287,9 +292,9 @@ def main():
             # You may force any request to return a DataFrame by passing the arguments as lists.
             print (blp.referenceRequest(['MDA CN Equity'], ['NAME_RT']))
             
-            # ========================
-            # = BulkRequest Examples =
-            # ========================
+            # ==============================
+            # = BulkRequest Examples (BDS) =
+            # ==============================
             # Requesting a single security and field will return a DataFrame.
             print (blp.bulkRequest('CIG CN Equity','EQY_DVD_ADJUST_FACT'))
             
